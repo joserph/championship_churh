@@ -17,8 +17,13 @@ class Team extends Model
         return $this->belongsTo(Championship::class);
     }
 
-    // public function players()
-    // {
-    //     return $this->hasMany(Player::class);
-    // }
+    public function players()
+    {
+        return $this->hasMany(Player::class);
+    }
+
+    public function specialGameResults()
+    {
+        return $this->hasMany(\App\Models\SpecialGameResult::class);
+    }
 }

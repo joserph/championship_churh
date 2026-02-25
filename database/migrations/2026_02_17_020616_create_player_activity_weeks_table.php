@@ -11,30 +11,21 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('activity_player', function (Blueprint $table) {
+        Schema::create('player_activity_weeks', function (Blueprint $table) {
             $table->id();
 
+            $table->foreignId('championship_week_id')
+                ->constrained()
+                ->cascadeOnDelete();
             $table->foreignId('player_id')
                 ->constrained()
                 ->cascadeOnDelete();
-
             $table->foreignId('activity_id')
                 ->constrained()
                 ->cascadeOnDelete();
-
-            // Week number (1–53) or any identifier you prefer
-            $table->foreignId('championship_week_id')->constrained()->cascadeOnDelete();
-
-            // Checkbox state
-            $table->boolean('completed')->default(false);
-
+            $table->string('points_earned');
+            
             $table->timestamps();
-
-            // Avoid duplicates for same player, activity and week
-            $table->unique(
-                ['player_id', 'activity_id', 'championship_week_id'],
-                'activity_player_unique'
-            );
         });
     }
 
@@ -43,6 +34,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('activity_player');
+        Schema::dropIfExists('player_activity_weeks');
     }
 };

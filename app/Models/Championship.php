@@ -17,4 +17,6 @@ class Championship extends Model
     {
         return $this->hasMany(Team::class);
     }
+
+    
 }

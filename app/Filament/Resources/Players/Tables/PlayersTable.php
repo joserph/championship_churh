@@ -60,7 +60,7 @@ class PlayersTable
                 ->label('Championship'),
             ];
             // Dynamic activity checkboxes
-            foreach ($activities as $activity) {
+            /*foreach ($activities as $activity) {
                 $columns[] = CheckboxColumn::make("activity_{$activity->id}")
                     ->label($activity->name . " ({$activity->points})")
                     ->getStateUsing(function ($record) use ($activity, $week) {
@@ -83,11 +83,11 @@ class PlayersTable
                         // optional: recalc team points later
                         // recalcTeamPoints($record->team_id, $week);
                     });
-            }
+            }*/
             // Points column
-            $columns[] = TextColumn::make('weekly_points')
+            /*$columns[] = TextColumn::make('weekly_points')
                 ->label('Points (week)')
-                ->getStateUsing(fn ($record) => $record->pointsForWeek($week));
+                ->getStateUsing(fn ($record) => $record->pointsForWeek($week));*/
 
         
 

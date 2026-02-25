@@ -11,12 +11,19 @@ class ChampionshipWeek extends Model
         'week_number',
         'start_date',
         'end_date',
-        'is_active',
-        'is_closed',
+        'active',
+        'special_games_count'
     ];
 
     public function championship()
     {
         return $this->belongsTo(Championship::class);
     }
+
+    public function specialGames()
+    {
+        return $this->hasMany(SpecialGame::class);
+    }
+
+
 }

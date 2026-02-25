@@ -43,11 +43,15 @@ class Player extends Model
     //         ->sum('points');
     // }
 
-    public function activities()
+    // public function activities()
+    // {
+    //     return $this->belongsToMany(Activity::class)
+    //         ->withPivot(['championship_week_id', 'completed'])
+    //         ->withTimestamps();
+    // }
+    public function playerActivityWeeks()
     {
-        return $this->belongsToMany(Activity::class)
-            ->withPivot(['championship_week_id', 'completed'])
-            ->withTimestamps();
+        return $this->hasMany(PlayerActivityWeek::class);
     }
 
     public function pointsForWeek(int $weekId): int
@@ -57,6 +61,14 @@ class Player extends Model
             ->wherePivot('completed', true)
             ->sum('points');
     }
+
+    // public function total_points(int $weekId): int
+    // {
+    //     return $this->activities()
+    //         ->wherePivot('championship_week_id', $weekId)
+    //         ->wherePivot('completed', true)
+    //         ->sum('points');
+    // }
 
     function activeWeekForChampionship(int $championshipId)
     {
