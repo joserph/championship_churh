@@ -11,19 +11,25 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('team_week_scores', function (Blueprint $table) {
+        Schema::create('championship_standings', function (Blueprint $table) {
             $table->id();
 
-            $table->foreignId('championship_week_id')
+            $table->foreignId('championship_id')
                 ->constrained()
                 ->cascadeOnDelete();
+
             $table->foreignId('team_id')
                 ->constrained()
                 ->cascadeOnDelete();
-            $table->integer('total_points');
+
+            $table->integer('played_weeks')->default(0);
+            $table->integer('total_points')->default(0);
+            $table->integer('points_difference')->default(0);
+            $table->integer('position')->nullable();
+
             $table->unique([
-                'championship_week_id',
-                'team_id',
+                'championship_id',
+                'team_id'
             ]);
             $table->timestamps();
         });
@@ -34,6 +40,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('team_week_scores');
+        Schema::dropIfExists('championship_standings');
     }
 };

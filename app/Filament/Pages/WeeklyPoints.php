@@ -8,6 +8,7 @@ use App\Models\Player;
 use App\Models\PlayerActivityWeek;
 use App\Models\SpecialGameResult;
 use App\Models\Team;
+use App\Models\TeamWeekScore;
 use Filament\Pages\Page;
 use BackedEnum;
 use Filament\Support\Icons\Heroicon;
@@ -19,6 +20,9 @@ use Filament\Tables\Grouping\Group;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Collection;
 use Livewire\Attributes\Computed;
+use App\Filament\Widgets\TeamPointsOverview;
+use Livewire\Attributes\On;
+use App\Services\ChampionshipStandingsService;
 
 class WeeklyPoints extends Page implements HasTable
 {
@@ -32,7 +36,6 @@ class WeeklyPoints extends Page implements HasTable
     public array $specialWinners = [];
     public $teams = [];
     // public array $teamSubtotals = [];
-
 
     public function table(Table $table): Table
     {
@@ -53,7 +56,7 @@ class WeeklyPoints extends Page implements HasTable
                 fn () => view('filament.components.special-games', [
                     'week' => $this->week,
                     'teams' => $this->teams,
-                    'championship_weeks' => ChampionshipWeek::all(),
+                    'championship_weeks' => ChampionshipWeek::where('active', true)->get(),
                 ])
             )
             ->columns($this->getDynamicColumns())
@@ -127,6 +130,9 @@ class WeeklyPoints extends Page implements HasTable
                     }
                     // $this->calculateTeamSubtotals();
                     $this->dispatch('$refresh');
+                    $this->dispatch('refreshTeamStats');
+                    unset($this->teamSubtotals);
+                    $this->syncTeamWeekScores();
                 });
         }
 
@@ -155,6 +161,7 @@ class WeeklyPoints extends Page implements HasTable
         $this->loadWeekData();
         $this->syncSpecialWinners();
         // $this->calculateTeamSubtotals();
+        $this->syncTeamWeekScores();
     }
 
     protected function loadWeekData(): void
@@ -206,6 +213,8 @@ class WeeklyPoints extends Page implements HasTable
             ]
         );
         unset($this->teamSubtotals);
+        $this->dispatch('refreshTeamStats');
+        $this->syncTeamWeekScores();
 
         // $this->calculateTeamSubtotals();
     }
@@ -216,9 +225,17 @@ class WeeklyPoints extends Page implements HasTable
         if (! $this->weekId) {
             return [];
         }
+        // ✅ obtener championship_id seguro
+        $championshipId = ChampionshipWeek::query()
+            ->whereKey($this->weekId)
+            ->value('championship_id');
+
+        if (! $championshipId) {
+            return [];
+        }
 
         $teams = Team::query()
-            ->where('championship_id', $this->week->championship_id)
+            ->where('championship_id', $championshipId)
             ->with([
                 'players.playerActivityWeeks' => fn ($q)
                     => $q->where('championship_week_id', $this->weekId),
@@ -252,6 +269,48 @@ class WeeklyPoints extends Page implements HasTable
                 ];
             })
             ->toArray();
+    }
+    protected function getHeaderWidgets(): array
+    {
+        return [
+            TeamPointsOverview::make([
+                'totals' => $this->teamSubtotals,
+                // 'teams' => $this->teams,
+            ]),
+        ];
+    }
+
+    #[On('refreshTeamStats')]
+    public function refresh(): void
+    {
+        // fuerza rerender del widget
+    }
+
+    protected function syncTeamWeekScores(): void
+    {
+        if (! $this->weekId) {
+            return;
+        }
+
+        TeamWeekScore::upsert(
+            collect($this->teamSubtotals)
+                ->map(fn ($points, $teamId) => [
+                    'championship_week_id' => $this->weekId,
+                    'team_id' => $teamId,
+                    'total_points' => $points,
+                    'updated_at' => now(),
+                    'created_at' => now(),
+                ])
+                ->values()
+                ->toArray(),
+
+            ['championship_week_id', 'team_id'],
+            ['total_points', 'updated_at']
+        );
+
+        ChampionshipStandingsService::rebuild(
+            $this->week->championship_id
+        );
     }
 
 }
