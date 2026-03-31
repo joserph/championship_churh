@@ -31,7 +31,7 @@ class PlayerForm
                             ->required()
                             ->label('Date of Birth')
                             ->displayFormat('d/m/Y')
-                            ->maxDate(now()->subYears(12)) // Minimum 12 years old
+                            ->maxDate(now()->subYears(10)) // Minimum 12 years old
                             ->helperText('Age will be calculated automatically')
                             ->reactive()
                             ->afterStateUpdated(function ($state, $set) {

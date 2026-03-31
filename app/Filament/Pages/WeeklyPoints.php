@@ -2,6 +2,7 @@
 
 namespace App\Filament\Pages;
 
+use App\Filament\Widgets\WeekSummary;
 use App\Models\Activity;
 use App\Models\ChampionshipWeek;
 use App\Models\Player;
@@ -162,6 +163,7 @@ class WeeklyPoints extends Page implements HasTable
         $this->syncSpecialWinners();
         // $this->calculateTeamSubtotals();
         $this->syncTeamWeekScores();
+        $this->dispatch('weekChanged', weekId: $this->weekId);
     }
 
     protected function loadWeekData(): void
@@ -270,6 +272,7 @@ class WeeklyPoints extends Page implements HasTable
             })
             ->toArray();
     }
+
     protected function getHeaderWidgets(): array
     {
         return [
@@ -277,8 +280,18 @@ class WeeklyPoints extends Page implements HasTable
                 'totals' => $this->teamSubtotals,
                 // 'teams' => $this->teams,
             ]),
+            WeekSummary::make(['weekId' => $this->weekId])
         ];
     }
+
+    // protected function getFooterWidgets(): array
+    // {
+    //     return [
+    //         WeekSummary::make([
+    //             'weekId' => $this->weekId,
+    //         ]),
+    //     ];
+    // }
 
     #[On('refreshTeamStats')]
     public function refresh(): void
